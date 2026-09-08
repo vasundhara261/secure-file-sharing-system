@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure File Sharing System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .tab-button {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        input[type="file"],
+        input[type="password"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="file"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: translateY(0);
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Secure File Sharing</h1>
+            <p>Hide files in images with military-grade encryption</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('hide')">Hide File</button>
+            <button class="tab-button" onclick="switchTab('extract')">Extract File</button>
+            <button class="tab-button" onclick="switchTab('info')">Image Info</button>
+        </div>
+        
+        <!-- Hide Tab -->
+        <div id="hide" class="tab-content active">
+            <div id="hideAlert"></div>
+            <div class="form-group">
+                <label>Cover Image (PNG/JPG)</label>
+                <input type="file" id="coverImage" accept="image/png,image/jpeg">
+            </div>
+            <div class="form-group">
+                <label>Secret File</label>
+                <input type="file" id="secretFile">
+            </div>
+            <div class="form-group">
+                <label>Encryption Password</label>
+                <input type="password" id="hidePassword" placeholder="Enter strong password">
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="compress" checked>
+                    Compress file
+                </label>
+            </div>
+            <div class="form-group">
+                <label>Bit Planes (1-8)</label>
+                <select id="bitPlanes">
+                    <option value="1" selected>1 (Safest)</option>
+                    <option value="2">2</option>
+                    <option value="3">3 (Recommended)</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <button class="button" onclick="hideFile()">Hide File</button>
+            <div class="loading" id="hideLoading">
+                <div class="spinner"></div>
+                <p>Processing...</p>
+            </div>
+        </div>
+        
+        <!-- Extract Tab -->
+        <div id="extract" class="tab-content">
+            <div id="extractAlert"></div>
+            <div class="form-group">
+                <label>Stego Image (PNG/JPG)</label>
+                <input type="file" id="stegoImage" accept="image/png,image/jpeg">
+            </div>
+            <div class="form-group">
+                <label>Decryption Password</label>
+                <input type="password" id="extractPassword" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label>Bit Planes (1-8)</label>
+                <select id="extractBitPlanes">
+                    <option value="1" selected>1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                </select>
+            </div>
+            <button class="button" onclick="extractFile()">Extract File</button>
+            <div class="loading" id="extractLoading">
+                <div class="spinner"></div>
+                <p>Processing...</p>
+            </div>
+        </div>
+        
+        <!-- Info Tab -->
+        <div id="info" class="tab-content">
+            <div id="infoAlert"></div>
+            <div class="form-group">
+                <label>Image File</label>
+                <input type="file" id="infoImage" accept="image/png,image/jpeg">
+            </div>
+            <button class="button" onclick="getImageInfo()">Analyze Image</button>
+            <div id="imageStats"></div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        }
+        
+        function hideFile() {
+            const coverImage = document.getElementById('coverImage').files[0];
+            const secretFile = document.getElementById('secretFile').files[0];
+            const password = document.getElementById('hidePassword').value;
+            const compress = document.getElementById('compress').checked;
+            const bitPlanes = document.getElementById('bitPlanes').value;
+            
+            if (!coverImage || !secretFile || !password) {
+                showAlert('hideAlert', 'Please fill all fields', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('cover_image', coverImage);
+            formData.append('secret_file', secretFile);
+            formData.append('password', password);
+            formData.append('compress', compress);
+            formData.append('bit_planes', bitPlanes);
+            
+            document.getElementById('hideLoading').style.display = 'block';
+            
+            fetch('/api/hide', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('hideLoading').style.display = 'none';
+                if (data.success) {
+                    showAlert('hideAlert', 'File hidden successfully!', 'success');
+                } else {
+                    showAlert('hideAlert', 'Error: ' + data.error, 'error');
+                }
+            })
+            .catch(e => {
+                document.getElementById('hideLoading').style.display = 'none';
+                showAlert('hideAlert', 'Error: ' + e.message, 'error');
+            });
+        }
+        
+        function extractFile() {
+            const stegoImage = document.getElementById('stegoImage').files[0];
+            const password = document.getElementById('extractPassword').value;
+            const bitPlanes = document.getElementById('extractBitPlanes').value;
+            
+            if (!stegoImage || !password) {
+                showAlert('extractAlert', 'Please fill all fields', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('stego_image', stegoImage);
+            formData.append('password', password);
+            formData.append('bit_planes', bitPlanes);
+            
+            document.getElementById('extractLoading').style.display = 'block';
+            
+            fetch('/api/extract', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                document.getElementById('extractLoading').style.display = 'none';
+                if (data.success) {
+                    showAlert('extractAlert', 'File extracted successfully!', 'success');
+                } else {
+                    showAlert('extractAlert', 'Error: ' + data.error, 'error');
+                }
+            })
+            .catch(e => {
+                document.getElementById('extractLoading').style.display = 'none';
+                showAlert('extractAlert', 'Error: ' + e.message, 'error');
+            });
+        }
+        
+        function getImageInfo() {
+            const image = document.getElementById('infoImage').files[0];
+            
+            if (!image) {
+                showAlert('infoAlert', 'Please select an image', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', image);
+            
+            fetch('/api/image-info', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const info = data.info;
+                    const statsHtml = `
+                        <div class="stats">
+                            <div class="stat-item">
+                                <span>Dimensions:</span>
+                                <strong>${info.width}x${info.height}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Format:</span>
+                                <strong>${info.format}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>File Size:</span>
+                                <strong>${(info.size_bytes / 1024).toFixed(2)} KB</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Hiding Capacity:</span>
+                                <strong>${(info.capacity_bytes / 1024).toFixed(2)} KB</strong>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('imageStats').innerHTML = statsHtml;
+                } else {
+                    showAlert('infoAlert', 'Error: ' + data.error, 'error');
+                }
+            })
+            .catch(e => {
+                showAlert('infoAlert', 'Error: ' + e.message, 'error');
+            });
+        }
+    </script>
+</body>
+</html>
